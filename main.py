@@ -45,7 +45,7 @@ Here is the documentation for each function:
     The last line of the script demonstrates how to use the scan_file function to tokenize an input
 """
 
-
+# Declaring a toke class
 class Token:
     def __init__(self, token_type, value):
         self.type = token_type
