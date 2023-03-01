@@ -45,89 +45,128 @@ Here is the documentation for each function:
     The last line of the script demonstrates how to use the scan_file function to tokenize an input
 """
 
-# Declaring a toke class
+
+# Define a Token class to represent a single token
 class Token:
     def __init__(self, token_type, value):
+        # Initialize the Token with a type and a value
         self.type = token_type
         self.value = value
+        # Initialize the "next" attribute to None
         self.next = None
 
 
+# Define a LinkedList class to represent a linked list of Tokens
 class LinkedList:
     def __init__(self):
+        # Initialize the LinkedList with a head attribute set to None
         self.head = None
 
     def add(self, token):
+        # Add a new Token to the end of the LinkedList
         if self.head is None:
+            # If the LinkedList is empty, set the head to the new Token
             self.head = token
         else:
+            # Otherwise, iterate through the LinkedList to find the end
             current = self.head
             while current.next is not None:
                 current = current.next
+            # Add the new Token to the end of the LinkedList
             current.next = token
 
-
 def is_valid_identifier(token):
-    # Check if the token is a valid identifier
+    # Check if a given string is a valid identifier
     return token.isalpha() or (token[0] == '_' and token[1:].isalnum())
 
-
 def tokenize(line):
-    # Tokenize a line of text into a list of tokens
+    # Tokenize a line of text into a list of individual Tokens
     tokens = []
     current_token = ""
     for char in line:
         if char.isalnum() or char == '_':
+            # If the character is alphanumeric or an underscore, add it to the current Token
             current_token += char
         else:
+            # Otherwise, if the current Token is not empty, add it to the list of Tokens
             if current_token:
                 tokens.append(current_token)
                 current_token = ""
+            # If the character is not a space or newline, add it as its own Token
             if char != ' ' and char != '\n':
                 tokens.append(char)
+    # Add the final Token (if there is one) to the list of Tokens
     if current_token:
         tokens.append(current_token)
     return tokens
 
 
 def parse_tokens(tokens):
-    # Parse a list of tokens into a linked list
+    # Parse a list of Tokens into a LinkedList of Tokens
     linked_list = LinkedList()
     i = 0
     while i < len(tokens):
         token = tokens[i]
         if token.isnumeric():
+            # If the Token is a number, add it to the LinkedList with type "NUMBER"
             linked_list.add(Token("NUMBER", token))
         elif is_valid_identifier(token):
+            # If the Token is a valid identifier, add it to the LinkedList with type "IDENTIFIER"
             linked_list.add(Token("IDENTIFIER", token))
         elif token in ("+", "-", "*", "/", "%"):
+            # If the Token is an operator, add it to the LinkedList with type "OPERATOR"
             linked_list.add(Token("OPERATOR", token))
         elif token == "=":
+            # If the Token is an assignment operator, add it to the LinkedList with type "ASSIGNMENT"
             linked_list.add(Token("ASSIGNMENT", token))
         elif token == "(":
+            # If the Token is a left parenthesis, add it to the LinkedList with type "LEFT_PAREN"
             linked_list.add(Token("LEFT_PAREN", token))
         elif token == ")":
+            # If the Token is a right parenthesis, add it to the LinkedList with type "RIGHT_PAREN"
             linked_list.add(Token("RIGHT_PAREN", token))
         else:
+            # If the Token is not recognized, raise a ValueError
             raise ValueError(f"Invalid token: {token}")
+            # Increment the index to move on to the next Token
         i += 1
-    return linked_list
+        return linked_list
 
 
 def scan_file(input_file_path, output_file_path):
-    # Scan an input file for valid SPL tokens and save them to a linked list in an output file
+    # Open the input file in read mode and the output file in write mode using a with block
     with open(input_file_path, "r") as input_file, open(output_file_path, "w") as output_file:
+
+        # Create an empty linked list to store the parsed tokens
         linked_list = LinkedList()
+
+        # Initialize a variable to keep track of the current line number being processed
         line_number = 0
+
+        # Loop through each line in the input file
         for line in input_file:
+
+            # Increment the line number
             line_number += 1
+
+            # Try to tokenize and parse the current line of text
             try:
+
+                # Tokenize the current line of text and store the resulting tokens in a list
                 tokens = tokenize(line)
+
+                # Parse the list of tokens into a linked list of Token objects
                 parsed_list = parse_tokens(tokens)
+
+                # Add the head of the parsed linked list to the main linked list
                 linked_list.add(parsed_list.head)
+
+            # If an error occurs during tokenization or parsing, print an error message and exit the function
             except ValueError as error:
                 print(f"Error on line {line_number}: {error}")
                 return
+
+        # Write each token in the linked list to the output file
         current = linked_list.head
         while current is not None:
             output_file.write(f"{current.type}: {current.value}\n")
